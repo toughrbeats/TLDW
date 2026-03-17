@@ -1,0 +1,10 @@
+torch>=2.0.0
+gradio
+imageio
+imageio-ffmpeg
+opencv-python
+numpy
+ffmpeg-python
+face_alignment
+insightface
+gfpgan

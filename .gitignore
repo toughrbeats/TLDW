@@ -1,0 +1,34 @@
+cat > .gitignore <<'EOF'
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets
+.env
+
+# Generated outputs
+output/
+work/
+talking_head_output/
+
+# Media
+*.wav
+*.mp4
+
+# Models / checkpoints
+*.pth
+*.pt
+*.tar
+*.dat
+
+# Misc
+*.log
+EOF
