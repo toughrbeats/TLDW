@@ -51,23 +51,24 @@ fi
 WORKDIR="${WORKDIR:-$(pwd)/work/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$WORKDIR"
 
-# ───── Absolute project roots (edit to taste) ───────────────────────────────
-OPENVOICE_HOME="/Users/raj/PycharmProjects/pipeline_openvoice"
-CAPTIONS_HOME="/Users/raj/PycharmProjects/Captions_pipeline"
-SADTALKER_HOME="/Users/raj/PycharmProjects/pipeline_sadtalker"
-SCRIPTGEN_HOME="/Users/raj/PycharmProjects/ScriptGen_Pipeline"
+# ───── Project roots (env-overridable; sensible repo-local defaults) ────────
 RUNNER_HOME="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$RUNNER_HOME/.." && pwd)}"
+OPENVOICE_HOME="${OPENVOICE_HOME:-$PROJECT_ROOT/pipeline_openvoice}"
+CAPTIONS_HOME="${CAPTIONS_HOME:-$PROJECT_ROOT/Captions_pipeline}"
+SADTALKER_HOME="${SADTALKER_HOME:-$PROJECT_ROOT/pipeline_sadtalker}"
+SCRIPTGEN_HOME="${SCRIPTGEN_HOME:-$PROJECT_ROOT/ScriptGen_Pipeline}"
 CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
 OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
 SADTALKER_PY="$SADTALKER_HOME/.venv/bin/python"
-COMPOSITOR_HOME="/Users/raj/PycharmProjects/PatternInterrupts_Pipeline"
+COMPOSITOR_HOME="${COMPOSITOR_HOME:-$PROJECT_ROOT/PatternInterrupts_Pipeline}"
 COMPOSITOR_PY="$COMPOSITOR_HOME/.venv/bin/python"
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
 FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
-YOUTUBE_HOME="/Users/raj/PycharmProjects/VidFinder_Pipeline"
+YOUTUBE_HOME="${YOUTUBE_HOME:-$PROJECT_ROOT/VidFinder_Pipeline}"
 YOUTUBE_PY="$YOUTUBE_HOME/.venv/bin/python"
-WHISPERX_HOME="/Users/raj/PycharmProjects/pipelinewhisperx"
-WHISPERX_PY="/Users/raj/PycharmProjects/pipelinewhisperx/.venv/bin/python"
+WHISPERX_HOME="${WHISPERX_HOME:-$PROJECT_ROOT/pipelinewhisperx}"
+WHISPERX_PY="${WHISPERX_PY:-$WHISPERX_HOME/.venv/bin/python}"
 
 [[ -x "$OPENVOICE_PY" ]] || { echo "❌  OpenVoice venv not found"; exit 1; }
 [[ -x "$SADTALKER_PY" ]] || { echo "❌  SadTalker venv not found"; exit 1; }
@@ -93,7 +94,7 @@ PY
 
 # ───── Font sanity (fail-fast) ───────────────────────────────────────────────
 # Keep this directory CLEAN: only .ttf/.otf inside
-FONTS_DIR="${FONTS_DIR:-/Users/raj/PycharmProjects/runnervidpipeline/fonts}"
+FONTS_DIR="${FONTS_DIR:-$RUNNER_HOME/fonts}"
 CAPTION_FONT_FILE="${CAPTION_FONT_FILE:-$FONTS_DIR/TikTokSans_24pt_Expanded-Black.ttf}"
 CAPTION_FONT_NAME="${CAPTION_FONT_NAME:-}"             # e.g., TikTok Sans 24pt Expanded Black
 CAPTION_FONT_POSTSCRIPT="${CAPTION_FONT_POSTSCRIPT:-}" # e.g., TikTokSans24ptExpanded-Black
@@ -267,7 +268,7 @@ PY
 
 else
   echo "📝  Generating script & beats (ScriptGen)"
-  export PYTHONPATH="${PYTHONPATH:-}:/Users/raj/PycharmProjects"
+  export PYTHONPATH="${PYTHONPATH:-}:$PROJECT_ROOT"
   SCRIPTGEN_PARENT="$(dirname "$SCRIPTGEN_HOME")"
   export PYTHONPATH="${PYTHONPATH:-}:$SCRIPTGEN_PARENT"
   export INLINE_TEXT="${INLINE_TEXT:-}"
@@ -329,7 +330,7 @@ OPENVOICE_ARGS=(
   --checkpoint-path "$OPENVOICE_HOME/checkpoints"
   --script "$FINAL_SCRIPT"
 )
-[[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker default )
+[[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker EN-Default )
 run "$OPENVOICE_PY" "${OPENVOICE_ARGS[@]}"
 
 # ───── 2) Alignment → captions_{srt,json} ───────────────────────────────────
