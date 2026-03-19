@@ -46,10 +46,12 @@ fi
 mkdir -p "$WORKDIR"
 echo "📂  Workdir: $WORKDIR"
 
-# ───── Project roots (edit if paths differ) ─────────────────────────────────
-OPENVOICE_HOME="/Users/raj/PycharmProjects/pipeline_openvoice"
-CAPTIONS_HOME="/Users/raj/PycharmProjects/Captions_pipeline"
-SCRIPTGEN_HOME="/Users/raj/PycharmProjects/ScriptGen_Pipeline"  # not used here; kept for PYTHONPATH
+# ───── Project roots (env-overridable; sensible repo-local defaults) ───────
+RUNNER_HOME="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$RUNNER_HOME/.." && pwd)}"
+OPENVOICE_HOME="${OPENVOICE_HOME:-$PROJECT_ROOT/pipeline_openvoice}"
+CAPTIONS_HOME="${CAPTIONS_HOME:-$PROJECT_ROOT/Captions_pipeline}"
+SCRIPTGEN_HOME="${SCRIPTGEN_HOME:-$PROJECT_ROOT/ScriptGen_Pipeline}"  # not used here; kept for PYTHONPATH
 CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
 OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
@@ -61,7 +63,7 @@ FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
 [[ -f "$FLATTEN_SCRIPT" ]] || { echo "❌ syncmap.py not found: $FLATTEN_SCRIPT"; exit 1; }
 
 # ───── Fonts (fail-fast) ────────────────────────────────────────────────────
-FONTS_DIR="${FONTS_DIR:-/Users/raj/PycharmProjects/runnervidpipeline/fonts}"
+FONTS_DIR="${FONTS_DIR:-$RUNNER_HOME/fonts}"
 CAPTION_FONT_FILE="${CAPTION_FONT_FILE:-$FONTS_DIR/TikTokSans_24pt_Expanded-Black.ttf}"
 CAPTION_FONT_NAME="${CAPTION_FONT_NAME:-}"
 CAPTION_FONT_POSTSCRIPT="${CAPTION_FONT_POSTSCRIPT:-}"

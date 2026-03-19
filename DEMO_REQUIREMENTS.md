@@ -3,7 +3,7 @@
 This repo currently has orchestration scripts, but most model checkpoints are **not** checked in.
 Use this checklist to make the end-to-end demo run.
 
-Quick start: run `bash scripts/get_demo_files.sh` to auto-download the known OpenVoice/SadTalker demo assets.
+Quick start: run `bash scripts/get_demo_files.sh` to auto-download the known OpenVoice/SadTalker demo assets (uses `curl`, does **not** require `wget`).
 
 ## 1) OpenVoice checkpoints/files to add
 
