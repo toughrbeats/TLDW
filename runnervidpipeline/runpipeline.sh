@@ -329,7 +329,7 @@ OPENVOICE_ARGS=(
   --checkpoint-path "$OPENVOICE_HOME/checkpoints"
   --script "$FINAL_SCRIPT"
 )
-[[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker default )
+[[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker EN-Default )
 run "$OPENVOICE_PY" "${OPENVOICE_ARGS[@]}"
 
 # ───── 2) Alignment → captions_{srt,json} ───────────────────────────────────

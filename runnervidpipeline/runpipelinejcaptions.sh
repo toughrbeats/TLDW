@@ -107,7 +107,7 @@ if [[ $FORCE_VOICE -eq 1 ]]; then
     --checkpoint-path "$OPENVOICE_HOME/checkpoints"
     --script "$WORKDIR/script.txt"
   )
-  [[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker default )
+  [[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker EN-Default )
   run "$OPENVOICE_PY" "${OPENVOICE_ARGS[@]}"
 else
   [[ -f "$VOICE_OUT" ]] || { echo "❌ Missing $VOICE_OUT (add it or run with --regen-voice)"; exit 1; }
