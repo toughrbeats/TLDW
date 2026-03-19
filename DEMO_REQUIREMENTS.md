@@ -61,19 +61,17 @@ Font asset expected by defaults:
 
 - `runnervidpipeline/fonts/TikTokSans_24pt_Expanded-Black.ttf` (already present)
 
-## 4) External project paths the runner expects
+## 4) External project paths the runner expects (hardcoded currently)
 
-`runnervidpipeline/runpipeline.sh` and `runpipelinejcaptions.sh` now use repo-local defaults derived from `PROJECT_ROOT`, and can be overridden via env vars:
+`runnervidpipeline/runpipeline.sh` uses absolute macOS paths. For this repo clone to work as a demo, either edit these paths or mirror those folders:
 
-- `OPENVOICE_HOME` (default: `$PROJECT_ROOT/pipeline_openvoice`)
-- `CAPTIONS_HOME` (default: `$PROJECT_ROOT/Captions_pipeline`)
-- `SADTALKER_HOME` (default: `$PROJECT_ROOT/pipeline_sadtalker`)
-- `SCRIPTGEN_HOME` (default: `$PROJECT_ROOT/ScriptGen_Pipeline`)
-- `COMPOSITOR_HOME` (default: `$PROJECT_ROOT/PatternInterrupts_Pipeline`)
-- Optional YouTube-seed overrides:
-  - `YOUTUBE_HOME` (default: `$PROJECT_ROOT/VidFinder_Pipeline`)
-  - `WHISPERX_HOME` (default: `$PROJECT_ROOT/pipelinewhisperx`)
-  - `WHISPERX_PY` (default: `$WHISPERX_HOME/.venv/bin/python`)
+- `/Users/raj/PycharmProjects/pipeline_openvoice`
+- `/Users/raj/PycharmProjects/Captions_pipeline`
+- `/Users/raj/PycharmProjects/pipeline_sadtalker`
+- `/Users/raj/PycharmProjects/ScriptGen_Pipeline`
+- `/Users/raj/PycharmProjects/PatternInterrupts_Pipeline`
+- `/Users/raj/PycharmProjects/VidFinder_Pipeline` (if YouTube seeding is used)
+- `/Users/raj/PycharmProjects/pipelinewhisperx` (if YouTube seeding is used)
 
 ## 5) Environment/API prerequisites
 
