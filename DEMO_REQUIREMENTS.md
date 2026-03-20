@@ -5,23 +5,6 @@ Use this checklist to make the end-to-end demo run.
 
 Quick start: run `bash scripts/get_demo_files.sh` to auto-download the known OpenVoice/SadTalker demo assets (uses `curl`, does **not** require `wget`).
 
-## 0) Simplest setup for new users
-
-If you want a nearly one-command bring-up for fresh clones:
-
-```bash
-bash scripts/bootstrap_demo.sh
-```
-
-Then run:
-
-```bash
-bash scripts/run_demo.sh --text "quick test" --avatar /absolute/path/avatar.jpg
-```
-
-`bootstrap_demo.sh` creates per-component venvs, writes `.demo_env` with the correct interpreter exports, and `run_demo.sh` sources that file automatically.
-If any configured interpreter path is missing, `run_demo.sh` now falls back to your active venv Python (`$VIRTUAL_ENV/bin/python`) or `python3`.
-
 ## 1) OpenVoice checkpoints/files to add
 
 Expected by `pipeline_openvoice/src/openvoice.py` and runner scripts:
@@ -78,19 +61,17 @@ Font asset expected by defaults:
 
 - `runnervidpipeline/fonts/TikTokSans_24pt_Expanded-Black.ttf` (already present)
 
-## 4) External project paths the runner expects
+## 4) External project paths the runner expects (hardcoded currently)
 
-`runnervidpipeline/runpipeline.sh` and `runpipelinejcaptions.sh` now use repo-local defaults derived from `PROJECT_ROOT`, and can be overridden via env vars:
+`runnervidpipeline/runpipeline.sh` uses absolute macOS paths. For this repo clone to work as a demo, either edit these paths or mirror those folders:
 
-- `OPENVOICE_HOME` (default: `$PROJECT_ROOT/pipeline_openvoice`)
-- `CAPTIONS_HOME` (default: `$PROJECT_ROOT/Captions_pipeline`)
-- `SADTALKER_HOME` (default: `$PROJECT_ROOT/pipeline_sadtalker`)
-- `SCRIPTGEN_HOME` (default: `$PROJECT_ROOT/ScriptGen_Pipeline`)
-- `COMPOSITOR_HOME` (default: `$PROJECT_ROOT/PatternInterrupts_Pipeline`)
-- Optional YouTube-seed overrides:
-  - `YOUTUBE_HOME` (default: `$PROJECT_ROOT/VidFinder_Pipeline`)
-  - `WHISPERX_HOME` (default: `$PROJECT_ROOT/pipelinewhisperx`)
-  - `WHISPERX_PY` (default: `$WHISPERX_HOME/.venv/bin/python`)
+- `/Users/raj/PycharmProjects/pipeline_openvoice`
+- `/Users/raj/PycharmProjects/Captions_pipeline`
+- `/Users/raj/PycharmProjects/pipeline_sadtalker`
+- `/Users/raj/PycharmProjects/ScriptGen_Pipeline`
+- `/Users/raj/PycharmProjects/PatternInterrupts_Pipeline`
+- `/Users/raj/PycharmProjects/VidFinder_Pipeline` (if YouTube seeding is used)
+- `/Users/raj/PycharmProjects/pipelinewhisperx` (if YouTube seeding is used)
 
 ## 5) Environment/API prerequisites
 
@@ -100,13 +81,6 @@ Font asset expected by defaults:
   - `pipeline_sadtalker/.venv/bin/python`
   - `Captions_pipeline/.venv/bin/python`
   - `PatternInterrupts_Pipeline/.venv/bin/python`
-- Optional explicit python overrides if your venv paths differ:
-  - `OPENVOICE_PY`, `SADTALKER_PY`, `CAPTIONS_PY`, `COMPOSITOR_PY`, `SCRIPTGEN_PY`, `YOUTUBE_PY`, `WHISPERX_PY`
-  - If unset, runners now try this fallback chain automatically:
-    1. component-local venv (for example `pipeline_openvoice/.venv/bin/python`)
-    2. active shell venv (`$VIRTUAL_ENV/bin/python`)
-    3. repo root venv (`$PROJECT_ROOT/.venv/bin/python`)
-    4. `python3` then `python` from `PATH`
 
 ## 6) Minimal “demo-ready” checkpoint summary
 
