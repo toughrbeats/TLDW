@@ -58,48 +58,21 @@ OPENVOICE_HOME="${OPENVOICE_HOME:-$PROJECT_ROOT/pipeline_openvoice}"
 CAPTIONS_HOME="${CAPTIONS_HOME:-$PROJECT_ROOT/Captions_pipeline}"
 SADTALKER_HOME="${SADTALKER_HOME:-$PROJECT_ROOT/pipeline_sadtalker}"
 SCRIPTGEN_HOME="${SCRIPTGEN_HOME:-$PROJECT_ROOT/ScriptGen_Pipeline}"
+CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
+OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
+SADTALKER_PY="$SADTALKER_HOME/.venv/bin/python"
 COMPOSITOR_HOME="${COMPOSITOR_HOME:-$PROJECT_ROOT/PatternInterrupts_Pipeline}"
+COMPOSITOR_PY="$COMPOSITOR_HOME/.venv/bin/python"
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
 FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
 YOUTUBE_HOME="${YOUTUBE_HOME:-$PROJECT_ROOT/VidFinder_Pipeline}"
+YOUTUBE_PY="$YOUTUBE_HOME/.venv/bin/python"
 WHISPERX_HOME="${WHISPERX_HOME:-$PROJECT_ROOT/pipelinewhisperx}"
-pick_python() {
-  local default_path="$1"
-  shift
-  local candidate=""
-  for candidate in "$default_path" "$@"; do
-    [[ -n "$candidate" ]] || continue
-    [[ -x "$candidate" ]] && { printf '%s\n' "$candidate"; return 0; }
-  done
-  return 1
-}
+WHISPERX_PY="${WHISPERX_PY:-$WHISPERX_HOME/.venv/bin/python}"
 
-OPENVOICE_PY="${OPENVOICE_PY:-$(pick_python "$OPENVOICE_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-CAPTIONS_PY="${CAPTIONS_PY:-$(pick_python "$CAPTIONS_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-SADTALKER_PY="${SADTALKER_PY:-$(pick_python "$SADTALKER_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-COMPOSITOR_PY="${COMPOSITOR_PY:-$(pick_python "$COMPOSITOR_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-SCRIPTGEN_PY="${SCRIPTGEN_PY:-$(pick_python "$SCRIPTGEN_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-YOUTUBE_PY="${YOUTUBE_PY:-$(pick_python "$YOUTUBE_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-WHISPERX_PY="${WHISPERX_PY:-$(pick_python "$WHISPERX_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
-
-[[ -x "$OPENVOICE_PY" ]] || {
-  echo "❌  OpenVoice python not found: $OPENVOICE_PY"
-  echo "   Tried: $OPENVOICE_HOME/.venv/bin/python, \$VIRTUAL_ENV/bin/python, $PROJECT_ROOT/.venv/bin/python, python3, python"
-  echo "   Set OPENVOICE_PY explicitly. Example:"
-  echo "   export OPENVOICE_PY=\"/absolute/path/to/python\""
-  exit 1
-}
-[[ -x "$SADTALKER_PY" ]] || {
-  echo "❌  SadTalker python not found: $SADTALKER_PY"
-  echo "   Set SADTALKER_PY or SADTALKER_HOME."
-  exit 1
-}
-[[ -x "$CAPTIONS_PY"  ]] || {
-  echo "❌  Captions python not found: $CAPTIONS_PY"
-  echo "   Set CAPTIONS_PY or CAPTIONS_HOME."
-  exit 1
-}
-[[ -f "$ALIGN_SCRIPT"  ]] || { echo "❌  align.py not found at $ALIGN_SCRIPT"; exit 1; }
+[[ -x "$OPENVOICE_PY" ]] || { echo "❌  OpenVoice venv not found"; exit 1; }
+[[ -x "$SADTALKER_PY" ]] || { echo "❌  SadTalker venv not found"; exit 1; }
+[[ -f "$ALIGN_SCRIPT"  ]] || { echo "❌  align.py not found"; exit 1; }
 [[ -f "$FLATTEN_SCRIPT" ]] || { echo "❌  syncmap.py not found at $FLATTEN_SCRIPT"; exit 1; }
 
 # ───── Helper ---------------------------------------------------------------
@@ -295,11 +268,6 @@ PY
 
 else
   echo "📝  Generating script & beats (ScriptGen)"
-  [[ -x "$SCRIPTGEN_PY" ]] || {
-    echo "❌  ScriptGen python not found: $SCRIPTGEN_PY"
-    echo "   Set SCRIPTGEN_PY explicitly."
-    exit 1
-  }
   export PYTHONPATH="${PYTHONPATH:-}:$PROJECT_ROOT"
   SCRIPTGEN_PARENT="$(dirname "$SCRIPTGEN_HOME")"
   export PYTHONPATH="${PYTHONPATH:-}:$SCRIPTGEN_PARENT"
