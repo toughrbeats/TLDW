@@ -46,22 +46,39 @@ fi
 mkdir -p "$WORKDIR"
 echo "📂  Workdir: $WORKDIR"
 
-# ───── Project roots (edit if paths differ) ─────────────────────────────────
-OPENVOICE_HOME="/Users/raj/PycharmProjects/pipeline_openvoice"
-CAPTIONS_HOME="/Users/raj/PycharmProjects/Captions_pipeline"
-SCRIPTGEN_HOME="/Users/raj/PycharmProjects/ScriptGen_Pipeline"  # not used here; kept for PYTHONPATH
-CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
-OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
+# ───── Project roots (env-overridable; sensible repo-local defaults) ───────
+RUNNER_HOME="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$RUNNER_HOME/.." && pwd)}"
+OPENVOICE_HOME="${OPENVOICE_HOME:-$PROJECT_ROOT/pipeline_openvoice}"
+CAPTIONS_HOME="${CAPTIONS_HOME:-$PROJECT_ROOT/Captions_pipeline}"
+SCRIPTGEN_HOME="${SCRIPTGEN_HOME:-$PROJECT_ROOT/ScriptGen_Pipeline}"  # not used here; kept for PYTHONPATH
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
 FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
+pick_python() {
+  local default_path="$1"
+  shift
+  local candidate=""
+  for candidate in "$default_path" "$@"; do
+    [[ -n "$candidate" ]] || continue
+    [[ -x "$candidate" ]] && { printf '%s\n' "$candidate"; return 0; }
+  done
+  return 1
+}
+OPENVOICE_PY="${OPENVOICE_PY:-$(pick_python "$OPENVOICE_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
+CAPTIONS_PY="${CAPTIONS_PY:-$(pick_python "$CAPTIONS_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
 
 [[ -f "$WORKDIR/script.txt" ]] || { echo "❌ Missing $WORKDIR/script.txt"; exit 1; }
-[[ -x "$CAPTIONS_PY" ]] || { echo "❌ captions venv python not found: $CAPTIONS_PY"; exit 1; }
+[[ -x "$CAPTIONS_PY" ]] || {
+  echo "❌ Captions python not found: $CAPTIONS_PY"
+  echo "   Tried: $CAPTIONS_HOME/.venv/bin/python, \$VIRTUAL_ENV/bin/python, $PROJECT_ROOT/.venv/bin/python, python3, python"
+  echo "   Set CAPTIONS_PY explicitly."
+  exit 1
+}
 [[ -f "$ALIGN_SCRIPT"  ]] || { echo "❌ align.py not found: $ALIGN_SCRIPT"; exit 1; }
 [[ -f "$FLATTEN_SCRIPT" ]] || { echo "❌ syncmap.py not found: $FLATTEN_SCRIPT"; exit 1; }
 
 # ───── Fonts (fail-fast) ────────────────────────────────────────────────────
-FONTS_DIR="${FONTS_DIR:-/Users/raj/PycharmProjects/runnervidpipeline/fonts}"
+FONTS_DIR="${FONTS_DIR:-$RUNNER_HOME/fonts}"
 CAPTION_FONT_FILE="${CAPTION_FONT_FILE:-$FONTS_DIR/TikTokSans_24pt_Expanded-Black.ttf}"
 CAPTION_FONT_NAME="${CAPTION_FONT_NAME:-}"
 CAPTION_FONT_POSTSCRIPT="${CAPTION_FONT_POSTSCRIPT:-}"
@@ -100,14 +117,19 @@ run () { local exe="$1"; shift; printf '+ %q ' "$exe" "$@"; printf '\n'; "$exe" 
 VOICE_OUT="$WORKDIR/voice.wav"
 if [[ $FORCE_VOICE -eq 1 ]]; then
   echo "🗣️   Regenerating voice via OpenVoice"
-  [[ -x "$OPENVOICE_PY" ]] || { echo "❌ OpenVoice venv python not found: $OPENVOICE_PY"; exit 1; }
+  [[ -x "$OPENVOICE_PY" ]] || {
+    echo "❌ OpenVoice python not found: $OPENVOICE_PY"
+    echo "   Tried: $OPENVOICE_HOME/.venv/bin/python, \$VIRTUAL_ENV/bin/python, $PROJECT_ROOT/.venv/bin/python, python3, python"
+    echo "   Set OPENVOICE_PY explicitly."
+    exit 1
+  }
   OPENVOICE_ARGS=(
     "$OPENVOICE_HOME/src/openvoice.py"
     --out "$VOICE_OUT"
     --checkpoint-path "$OPENVOICE_HOME/checkpoints"
     --script "$WORKDIR/script.txt"
   )
-  [[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker default )
+  [[ -n "$REF_WAV" ]] && OPENVOICE_ARGS+=( --reference "$REF_WAV" ) || OPENVOICE_ARGS+=( --speaker EN-Default )
   run "$OPENVOICE_PY" "${OPENVOICE_ARGS[@]}"
 else
   [[ -f "$VOICE_OUT" ]] || { echo "❌ Missing $VOICE_OUT (add it or run with --regen-voice)"; exit 1; }
