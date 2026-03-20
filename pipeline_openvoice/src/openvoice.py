@@ -40,7 +40,7 @@ def clean_text(text: str) -> str:
 
 # ── Voice Cloning ─────────────────────────────────────
 def clone_voice(
-    reference_wav: str,
+    reference_wav: str | None,
     script_path: str | None,
     text: str | None,
     output_wav: str,
@@ -48,12 +48,13 @@ def clone_voice(
     speaker: str = "EN-Default",
     language: str = "EN"
 ) -> Path:
-    reference_wav = Path(reference_wav).expanduser().resolve()
     output_wav = Path(output_wav).expanduser().resolve()
     checkpoint_path = Path(checkpoint_path).expanduser().resolve()
 
-    if not reference_wav.exists():
-        raise FileNotFoundError(f"Reference wav not found: {reference_wav}")
+    if reference_wav:
+        reference_wav_path = Path(reference_wav).expanduser().resolve()
+        if not reference_wav_path.exists():
+            raise FileNotFoundError(f"Reference wav not found: {reference_wav_path}")
 
     # Load text
     if text is None:
@@ -68,8 +69,37 @@ def clone_voice(
     if not text:
         raise ValueError("Nothing left after cleaning the text.")
 
-    # Load base speaker embedding
-    base_se_path = "/Users/raj/PycharmProjects/pipeline_openvoice/checkpoints/checkpoints_v2/base_speakers/ses/en-default.pth"
+    # Resolve checkpoint layout
+    checkpoint_roots = []
+    if (checkpoint_path / "checkpoints_v2").exists():
+        checkpoint_roots.append(checkpoint_path / "checkpoints_v2")
+    checkpoint_roots.append(checkpoint_path)
+
+    def first_existing(candidates: list[Path], label: str) -> Path:
+        for c in candidates:
+            if c.exists():
+                return c
+        looked = "\n - ".join(str(c) for c in candidates)
+        raise FileNotFoundError(f"Could not find {label}. Looked in:\n - {looked}")
+
+    base_se_path = first_existing(
+        [
+            root / "base_speakers" / "ses" / "en-default.pth"
+            for root in checkpoint_roots
+        ] + [
+            root / "base_speakers" / "en-default.pth"
+            for root in checkpoint_roots
+        ],
+        "base speaker embedding (en-default.pth)",
+    )
+    converter_config_path = first_existing(
+        [root / "converter" / "config.json" for root in checkpoint_roots],
+        "converter config.json",
+    )
+    converter_ckpt_path = first_existing(
+        [root / "converter" / "checkpoint.pth" for root in checkpoint_roots],
+        "converter checkpoint.pth",
+    )
     base_se = torch.load(base_se_path, map_location=DEVICE)
 
     # Load TTS model
@@ -88,11 +118,8 @@ def clone_voice(
         tts.tts_to_file(text, sid, base_out_path)
 
     # Convert voice style
-    converter = ToneColorConverter(
-    "/Users/raj/PycharmProjects/pipeline_openvoice/checkpoints/checkpoints_v2/converter/config.json",
-        device=DEVICE
-    )
-    converter.load_ckpt("/Users/raj/PycharmProjects/pipeline_openvoice/checkpoints/checkpoints_v2/converter/checkpoint.pth")
+    converter = ToneColorConverter(str(converter_config_path), device=DEVICE)
+    converter.load_ckpt(str(converter_ckpt_path))
     converter.convert(
         audio_src_path=base_out_path,
         src_se=base_se,
@@ -108,7 +135,7 @@ def clone_voice(
 # ── CLI Argument Parsing ──────────────────────────────
 def parse_args(argv=None):
     p = argparse.ArgumentParser(description="Clone a voice using OpenVoice with base embedding.")
-    p.add_argument("--reference", required=True, help="Reference .wav file (for matching tone).")
+    p.add_argument("--reference", help="Optional reference .wav file (for matching tone).")
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument("--script", help="Text script file.")
     group.add_argument("--text", help="Inline text to synthesize.")
