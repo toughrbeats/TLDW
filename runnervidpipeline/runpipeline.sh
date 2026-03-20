@@ -274,7 +274,7 @@ else
   export INLINE_TEXT="${INLINE_TEXT:-}"
   export WORKDIR
 
-  "$SCRIPTGEN_HOME/.venv/bin/python" - <<'PY'
+  run "$SCRIPTGEN_PY" - <<'PY'
 import os
 from pathlib import Path
 from ScriptGen_Pipeline.ScriptGen import generate_video_assets

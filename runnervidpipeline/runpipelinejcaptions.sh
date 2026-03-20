@@ -56,9 +56,26 @@ CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
 OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
 FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
+pick_python() {
+  local default_path="$1"
+  shift
+  local candidate=""
+  for candidate in "$default_path" "$@"; do
+    [[ -n "$candidate" ]] || continue
+    [[ -x "$candidate" ]] && { printf '%s\n' "$candidate"; return 0; }
+  done
+  return 1
+}
+OPENVOICE_PY="${OPENVOICE_PY:-$(pick_python "$OPENVOICE_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
+CAPTIONS_PY="${CAPTIONS_PY:-$(pick_python "$CAPTIONS_HOME/.venv/bin/python" "${VIRTUAL_ENV:-}/bin/python" "$PROJECT_ROOT/.venv/bin/python" "$(command -v python3 || true)" "$(command -v python || true)" || true)}"
 
 [[ -f "$WORKDIR/script.txt" ]] || { echo "❌ Missing $WORKDIR/script.txt"; exit 1; }
-[[ -x "$CAPTIONS_PY" ]] || { echo "❌ captions venv python not found: $CAPTIONS_PY"; exit 1; }
+[[ -x "$CAPTIONS_PY" ]] || {
+  echo "❌ Captions python not found: $CAPTIONS_PY"
+  echo "   Tried: $CAPTIONS_HOME/.venv/bin/python, \$VIRTUAL_ENV/bin/python, $PROJECT_ROOT/.venv/bin/python, python3, python"
+  echo "   Set CAPTIONS_PY explicitly."
+  exit 1
+}
 [[ -f "$ALIGN_SCRIPT"  ]] || { echo "❌ align.py not found: $ALIGN_SCRIPT"; exit 1; }
 [[ -f "$FLATTEN_SCRIPT" ]] || { echo "❌ syncmap.py not found: $FLATTEN_SCRIPT"; exit 1; }
 
@@ -102,7 +119,12 @@ run () { local exe="$1"; shift; printf '+ %q ' "$exe" "$@"; printf '\n'; "$exe" 
 VOICE_OUT="$WORKDIR/voice.wav"
 if [[ $FORCE_VOICE -eq 1 ]]; then
   echo "🗣️   Regenerating voice via OpenVoice"
-  [[ -x "$OPENVOICE_PY" ]] || { echo "❌ OpenVoice venv python not found: $OPENVOICE_PY"; exit 1; }
+  [[ -x "$OPENVOICE_PY" ]] || {
+    echo "❌ OpenVoice python not found: $OPENVOICE_PY"
+    echo "   Tried: $OPENVOICE_HOME/.venv/bin/python, \$VIRTUAL_ENV/bin/python, $PROJECT_ROOT/.venv/bin/python, python3, python"
+    echo "   Set OPENVOICE_PY explicitly."
+    exit 1
+  }
   OPENVOICE_ARGS=(
     "$OPENVOICE_HOME/src/openvoice.py"
     --out "$VOICE_OUT"
