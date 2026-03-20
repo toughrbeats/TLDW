@@ -52,6 +52,8 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$RUNNER_HOME/.." && pwd)}"
 OPENVOICE_HOME="${OPENVOICE_HOME:-$PROJECT_ROOT/pipeline_openvoice}"
 CAPTIONS_HOME="${CAPTIONS_HOME:-$PROJECT_ROOT/Captions_pipeline}"
 SCRIPTGEN_HOME="${SCRIPTGEN_HOME:-$PROJECT_ROOT/ScriptGen_Pipeline}"  # not used here; kept for PYTHONPATH
+CAPTIONS_PY="$CAPTIONS_HOME/.venv/bin/python"
+OPENVOICE_PY="$OPENVOICE_HOME/.venv/bin/python"
 ALIGN_SCRIPT="$CAPTIONS_HOME/align.py"
 FLATTEN_SCRIPT="$CAPTIONS_HOME/syncmap.py"
 pick_python() {
