@@ -64,37 +64,10 @@ if [[ -f "$OPENVOICE_DIR/checkpoints/checkpoints_v2/base_speakers/en-default.pth
 fi
 
 echo "\n== SadTalker checkpoints =="
-
-download_sadtalker_models_with_curl() {
-  local base="$SADTALKER_DIR"
-  local -a files=(
-    "https://github.com/OpenTalker/SadTalker/releases/download/v0.0.2-rc/mapping_00109-model.pth.tar|$base/checkpoints/mapping_00109-model.pth.tar"
-    "https://github.com/OpenTalker/SadTalker/releases/download/v0.0.2-rc/mapping_00229-model.pth.tar|$base/checkpoints/mapping_00229-model.pth.tar"
-    "https://github.com/OpenTalker/SadTalker/releases/download/v0.0.2-rc/SadTalker_V0.0.2_256.safetensors|$base/checkpoints/SadTalker_V0.0.2_256.safetensors"
-    "https://github.com/OpenTalker/SadTalker/releases/download/v0.0.2-rc/SadTalker_V0.0.2_512.safetensors|$base/checkpoints/SadTalker_V0.0.2_512.safetensors"
-    "https://github.com/xinntao/facexlib/releases/download/v0.1.0/alignment_WFLW_4HG.pth|$base/gfpgan/weights/alignment_WFLW_4HG.pth"
-    "https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth|$base/gfpgan/weights/detection_Resnet50_Final.pth"
-    "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth|$base/gfpgan/weights/GFPGANv1.4.pth"
-    "https://github.com/xinntao/facexlib/releases/download/v0.2.2/parsing_parsenet.pth|$base/gfpgan/weights/parsing_parsenet.pth"
-  )
-
-  local entry url out
-  for entry in "${files[@]}"; do
-    url="${entry%%|*}"
-    out="${entry#*|}"
-    if [[ -s "$out" ]]; then
-      echo "✅ Exists: $out"
-      continue
-    fi
-    mkdir -p "$(dirname "$out")"
-    fetch "$out" "$url" || {
-      echo "❌ Failed to download SadTalker asset: $url"
-      return 1
-    }
-  done
-}
-
-download_sadtalker_models_with_curl
+(
+  cd "$SADTALKER_DIR"
+  bash scripts/download_models.sh
+)
 
 # quick presence checks for demo-critical files
 check_file() {
